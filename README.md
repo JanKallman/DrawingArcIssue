@@ -1,7 +1,7 @@
 # DrawingArcIssue
 
 This sample illustrates the issue we are having trying to calculate the end coordinates of the arcTo element in the presetShapeDefinition.xml.
-
+It is written in c# and generates the cloud as a svg.
 This sample uses the cloud shape definition's pathLst:
 ```xml
     <pathLst xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
