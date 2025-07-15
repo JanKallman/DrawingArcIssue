@@ -6,10 +6,10 @@ using System.Text;
 
 var ci = Thread.CurrentThread.CurrentCulture;
 Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-await PresetShapeDefinitions.LoadPresetShapeDefinitionFromXmlAsync();
+await PresetShapeDefinitions.LoadPresetShapeDefinitionFromXmlAsync();       //The definition is in the resources/presetShapeDefinitions.xml file row 4617. 
 
-//This sample is hard coded aginst the Cloud shape in the presetShapeDefinitions.xml.
-//As the height and width in the definintion is 43200 we just divide the values with 100 for a svg size of 432 pixels.
+//This sample is hard coded against the Cloud shape in the presetShapeDefinitions.xml.
+//As the height and width in the definition is 43200 we just divide the values with 100 for a svg size of 432 pixels.
 var cloudShape = PresetShapeDefinitions.ShapeDefinitions[OfficeOpenXml.Drawing.eShapeStyle.Cloud].Clone();
 StringBuilder svgSb = new StringBuilder();
 svgSb.AppendLine("<svg width=\"432\" height=\"432\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" overflow=\"visible\" viewbox=\"0,0,500,500\">");
@@ -45,16 +45,27 @@ foreach(var path in cloudShape.ShapePaths)
                 var endAngleRad = ShapeDefinition.Radians(startAngle + swingAngle);
 
                 //************************************************************************************
-                //Here is the calculation that needs to be corrected.
-                //It is not clear how to calculate the end coordinates for the ArcTo element.
-                //As the end coordinates are used as input to the next arc the two paths of the cloud does not align.
+                // This calculates the end coordinates.
                 //************************************************************************************
-                double centerX, centerY;
-                centerX = cx - wR * Math.Cos(startAngleRad);
-                centerY = cy - hR * Math.Sin(startAngleRad);
+                
+                var angleT = Math.Atan((wR * Math.Tan(startAngleRad)) / hR);
+                var angleTEnd = Math.Atan((wR * Math.Tan(endAngleRad)) / hR);
 
-                var endX = centerX + wR * Math.Cos(endAngleRad);
-                var endY = centerY + hR * Math.Sin(endAngleRad);
+                //Atan can only return values on positive x 90° to -90°
+                //So we must adjust by adding Pi (180°) if x of the angle is negative
+                if (Math.Cos(startAngleRad) < 0)
+                {
+                    angleT += (Math.Round((double)System.Math.PI, 14));
+                }
+                if (Math.Cos(endAngleRad) < 0)
+                {
+                    angleTEnd += (Math.Round((double)System.Math.PI, 14));
+                }
+
+                var centerX = cx - (wR * Math.Cos(angleT));
+                var centerY = cy - (hR * Math.Sin(angleT));
+                var endX = (double)Math.Round(centerX + wR * Math.Cos(angleTEnd), 5);
+                var endY = (double)Math.Round(centerY + hR * Math.Sin(angleTEnd), 5);
 
                 //************************************************************************************
 
